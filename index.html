@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sliusarchuk</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  html, body { height: 100%; margin: 0; background: #000; }
+  body { display: grid; place-items: center; color: #fff; }
+  #n { margin: 0; font: 700 clamp(4rem, 22vw, 16rem)/1 ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; opacity: 0; transition: opacity .6s; }
+  #n.on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { #n { transition: none; } }
+</style>
+</head>
+<body>
+<main><p id="n" role="status" aria-label="Visitors" aria-live="polite">0</p></main>
+<noscript><style>#n{opacity:1}</style></noscript>
+<script>
+(function () {
+  var NS = "sliusarchuk-com", KEY = "visitors", BASE = "https://abacus.jasoncameron.dev";
+  var el = document.getElementById("n"), seen = false;
+  try { seen = localStorage.getItem("visited") === "1"; } catch (e) {}          // count each browser once; later visits only read
+  function show(v) { el.textContent = typeof v === "number" ? v.toLocaleString("en-US") : "—"; el.classList.add("on"); }
+  fetch(BASE + (seen ? "/get/" : "/hit/") + NS + "/" + KEY, { cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (j) { show(Number(j.value)); if (!seen) { try { localStorage.setItem("visited", "1"); } catch (e) {} } })
+    .catch(function () { show(null); });
+})();
+</script>
+</body>
+</html>
