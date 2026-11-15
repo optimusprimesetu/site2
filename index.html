@@ -1,36 +1,211 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sliusarchuk</title>
-<meta name="robots" content="noindex">
-<meta name="theme-color" content="#000000">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23fff'/%3E%3C/svg%3E">
-<style>
-  html, body { height: 100%; margin: 0; background: #000; }
-  body { display: grid; place-items: center; color: #fff; }
-  #n { margin: 0; font: 700 clamp(4rem, 22vw, 16rem)/1 ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; opacity: 0; transition: opacity .6s; }
-  #n.on { opacity: 1; }
-  @media (prefers-reduced-motion: reduce) { #n { transition: none; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEAD-DROP // 01</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #0a0a0a;
+            --muted: #666666;
+            --border: #0a0a0a;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0a0a0a;
+                --fg: #f5f5f5;
+                --muted: #888888;
+                --border: #f5f5f5;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            line-height: 1.4;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 580px;
+            border: 2px solid var(--border);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 2px solid var(--border);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .message-display {
+            padding: 40px 24px;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .quote {
+            font-size: clamp(1.5rem, 4vw, 2.25rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+            margin-bottom: 24px;
+        }
+
+        .timestamp {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        form {
+            display: flex;
+            border-top: 2px solid var(--border);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--fg);
+            padding: 18px 20px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--muted);
+        }
+
+        button {
+            background: var(--fg);
+            color: var(--bg);
+            border: none;
+            border-left: 2px solid var(--border);
+            padding: 0 28px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
-<main>
-  <p>hello</p><br>
-  <p id="n" role="status" aria-label="Visitors" aria-live="polite">0</p></main>
-<noscript><style>#n{opacity:1}</style></noscript>
-<script>
-(function () {
-  var NS = "sliusarchuk-com", KEY = "visitors", BASE = "https://abacus.jasoncameron.dev";
-  var el = document.getElementById("n"), seen = false;
-  try { seen = localStorage.getItem("visited") === "1"; } catch (e) {}          // count each browser once; later visits only read
-  function show(v) { el.textContent = typeof v === "number" ? v.toLocaleString("en-US") : "—"; el.classList.add("on"); }
-  fetch(BASE + (seen ? "/get/" : "/hit/") + NS + "/" + KEY, { cache: "no-store" })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (j) { show(Number(j.value)); if (!seen) { try { localStorage.setItem("visited", "1"); } catch (e) {} } })
-    .catch(function () { show(null); });
-})();
-</script>
+
+    <div class="container">
+        <header>
+            <span>GLOBAL DEAD-DROP</span>
+            <span id="status">SYNCING...</span>
+        </header>
+
+        <div class="message-display">
+            <div class="quote" id="msg">Loading transmission...</div>
+            <div class="timestamp" id="meta">—</div>
+        </div>
+
+        <form id="dropForm">
+            <input 
+                type="text" 
+                id="inputMsg" 
+                maxlength="140" 
+                placeholder="Overwrite the current message (max 140 chars)..." 
+                required 
+                autocomplete="off"
+            >
+            <button type="submit" id="submitBtn">Drop</button>
+        </form>
+    </div>
+
+    <script>
+        // Uses npoint.io free public JSON bin for zero-auth serverless persistence
+        // Replace this endpoint with your own at https://www.npoint.io/ for a private bin
+        const API_URL = "https://api.npoint.io/43a51b5f9c088e683a22";
+
+        const msgEl = document.getElementById("msg");
+        const metaEl = document.getElementById("meta");
+        const statusEl = document.getElementById("status");
+        const form = document.getElementById("dropForm");
+        const input = document.getElementById("inputMsg");
+        const btn = document.getElementById("submitBtn");
+
+        async function loadDrop() {
+            statusEl.textContent = "FETCHING...";
+            try {
+                const res = await fetch(API_URL, { cache: "no-store" });
+                const data = await res.json();
+                msgEl.textContent = data.text || "No transmission yet.";
+                metaEl.textContent = data.time ? `LAST OVERWRITE: ${data.time}` : "AWAITING INPUT";
+                statusEl.textContent = "LIVE";
+            } catch (err) {
+                msgEl.textContent = "Signal lost. Unable to reach relay.";
+                statusEl.textContent = "OFFLINE";
+            }
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const text = input.value.trim();
+            if (!text) return;
+
+            btn.disabled = true;
+            statusEl.textContent = "WRITING...";
+
+            const payload = {
+                text: text,
+                time: new Date().toUTCString()
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                input.value = "";
+                await loadDrop();
+            } catch (err) {
+                statusEl.textContent = "ERROR";
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        loadDrop();
+    </script>
 </body>
 </html>
